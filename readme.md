@@ -1,0 +1,3 @@
+- packer to build a docker-compose generic ami
+- terraform to spin up a docker-compose ami with the actual docker-compose.yml
+- rest api and redis as db to test
