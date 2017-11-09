@@ -1,0 +1,46 @@
+{
+  "variables": {
+    "aws_access_key": "",
+    "aws_secret_key": ""
+  },
+  "builders": [{
+    "ami_name": "docker-compose-{{timestamp}}",
+    "type": "amazon-ebs",
+    "access_key": "{{user `aws_access_key`}}",
+    "secret_key": "{{user `aws_secret_key`}}",
+    "region": "us-west-2",
+    "source_ami": "{{user `source-ami`}}",
+    "instance_type": "t2.small",
+    "ssh_username": "ubuntu",
+    "ssh_keypair_name": "keyname",
+    "ssh_private_key_file": "keyfile.pem",
+    "tags": {
+      "name": "docker-compose-{{timestamp}}",
+      "Date": "{{isotime \"2006-01-02\"}}"
+    }
+  }],
+  "provisioners": [{
+      "source": "./files/",
+      "destination": "/home/ubuntu/",
+      "type": "file"
+    },
+    {
+      "type": "shell",
+      "inline": [
+        "sudo mv /home/ubuntu/docker-service.conf /etc/init/",
+        "sudo mkdir /home/ubuntu/logsdeploy",
+        "sudo touch /home/ubuntu/logsdeploy/start.log && sudo touch /home/ubuntu/logsdeploy/stop.log",
+        "sudo chown -R ubuntu:ubuntu /home/ubuntu/",
+        "sudo chmod -R 755 /home/ubuntu/*",
+        "curl -sSl https://get.docker.com | sudo sh",
+        "sudo usermod -a -G docker ubuntu",
+        "sudo apt-get update",
+        "sudo apt-get -y install python-pip python-dev build-essential ntp jq",
+        "sudo pip install --upgrade pip virtualenv",
+        "sudo pip install boto docker docker-compose retrying",
+        "sudo chmod +x /usr/local/bin/docker-compose",
+        "sudo docker pull {{user `base_image`}}"
+      ]
+    }
+  ]
+}
